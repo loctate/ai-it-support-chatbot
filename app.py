@@ -1,4 +1,13 @@
 import streamlit as st
+from groq import Groq
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+client = Groq(
+    api_key=os.getenv("GROQ_API_KEY")
+)
 
 st.title("AI IT Support Chatbot")
 
@@ -8,52 +17,26 @@ user_input = st.text_input(
 
 if st.button("Get Solution"):
 
-    issue = user_input.lower()
+    prompt = f"""
+    You are a professional IT Support technician.
 
-    if "wifi" in issue:
-        answer = """
-1. Restart your router and modem
-2. Forget and reconnect the WiFi network
-3. Run Windows Network Troubleshooter
-4. Check IP configuration using ipconfig
-5. Test another device on the same network
-"""
+    Help troubleshoot this issue:
 
-    elif "printer" in issue:
-        answer = """
-1. Check printer power and cable connection
-2. Restart the printer
-3. Reinstall printer drivers
-4. Verify printer is set as default
-5. Restart Print Spooler service
-"""
+    {user_input}
 
-    elif "slow" in issue:
-        answer = """
-1. Restart the computer
-2. Disable unnecessary startup applications
-3. Check CPU and RAM usage
-4. Scan for malware
-5. Free up disk space
-"""
+    Give clear step-by-step troubleshooting guidance.
+    """
 
-    elif "overheating" in issue:
-        answer = """
-1. Clean laptop fan and air vents
-2. Avoid blocking ventilation
-3. Close unnecessary applications
-4. Check CPU usage
-5. Replace thermal paste if necessary
-"""
+    response = client.chat.completions.create(
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        model="llama-3.3-70b-versatile"
+    )
 
-    else:
-        answer = """
-1. Restart the device
-2. Check system connections
-3. Verify software updates
-4. Review system logs
-5. Contact IT support if issue continues
-"""
+    answer = response.choices[0].message.content
 
-    st.subheader("Troubleshooting Steps")
     st.write(answer)
